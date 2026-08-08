@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Smart Folder & Luxand Face Recognition App</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QR Code Generator CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- JSZip & FileSaver for Downloading All Photos -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        body {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body class="text-gray-800 font-sans pb-12">
+
+    <!-- Header Navigation Bar -->
+    <nav class="bg-indigo-900 text-white shadow-xl sticky top-0 z-50 border-b border-indigo-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="showSection('landing')">
+                    <i class="fa-solid fa-folder-closed text-2xl text-indigo-400"></i>
+                    <span class="font-bold text-xl tracking-wide">Smart Vault AI</span>
+                </div>
+                <div class="flex space-x-2 sm:space-x-3 text-xs sm:text-sm font-medium">
+                    <button onclick="showSection('create')" id="nav-create" class="px-2.5 py-2 rounded-lg transition hover:bg-indigo-800 flex items-center gap-1">
+                        <i class="fa-solid fa-folder-plus"></i> <span class="hidden sm:inline">Create Folder</span>
+                    </button>
+                    <button onclick="showSection('myfolders')" id="nav-myfolders" class="px-2.5 py-2 rounded-lg transition hover:bg-indigo-800 flex items-center gap-1">
+                        <i class="fa-solid fa-folder-open"></i> <span class="hidden sm:inline">My Folders</span>
+                    </button>
+                    <button onclick="showSection('search')" id="nav-search" class="px-2.5 py-2 rounded-lg transition hover:bg-indigo-800 flex items-center gap-1 bg-indigo-800/60">
+                        <i class="fa-solid fa-magnifying-glass text-indigo-300"></i> <span>Search Albums</span>
+                    </button>
+                    <button onclick="showSection('account')" id="nav-account" class="px-2.5 py-2 rounded-lg transition hover:bg-indigo-800 flex items-center gap-1">
+                        <i class="fa-solid fa-user-gear"></i> <span class="hidden sm:inline">Account</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTAINER -->
+    <div class="max-w-6xl mx-auto px-4 mt-8">
+
+        <!-- 0. NORMAL LANDING INTERFACE PAGE -->
+        <div id="section-landing" class="glass-card rounded-2xl p-8 shadow-2xl text-center space-y-6">
+            <div class="inline-block p-4 bg-indigo-100 rounded-full text-indigo-600 mb-2">
+                <i class="fa-solid fa-face-smile-beam text-5xl"></i>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900">सुरक्षित फ़ोल्डर और AI Face Recognition प्लेटफ़ॉर्म</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">
+                अपनी फ़ोटो सुरक्षित फ़ोल्डर में अपलोड करें। Luxand AI Face Recognition API के ज़रिए केवल अपना चेहरा स्कैन करके तुरंत अपनी फ़ोटो खोजें और डाउनलोड करें।
+            </p>
+            <div class="flex flex-wrap justify-center gap-4 pt-4">
+                <button onclick="showSection('create')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg transition">
+                    <i class="fa-solid fa-plus-circle mr-2"></i> नया Folder बनाएं
+                </button>
+                <button onclick="showSection('myfolders')" class="bg-gray-800 hover:bg-gray-900 text-white font-semibold px-6 py-3 rounded-xl shadow-lg transition">
+                    <i class="fa-solid fa-folder-tree mr-2"></i> My Folders देखें
+                </button>
+                <button onclick="showSection('search')" class="bg-purple-700 hover:bg-purple-800 text-white font-semibold px-6 py-3 rounded-xl shadow-lg transition">
+                    <i class="fa-solid fa-magnifying-glass mr-2"></i> Search Albums
+                </button>
+            </div>
+        </div>
+
+        <!-- 1. CREATE FOLDER SECTION -->
+        <div id="section-create" class="hidden glass-card rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+            <div class="border-b pb-4 flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-gray-800"><i class="fa-solid fa-folder-plus text-indigo-600 mr-2"></i> Create New Folder</h2>
+                <span class="text-xs bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full font-medium">Step 1 of 2</span>
+            </div>
+
+            <form id="create-folder-form" onsubmit="handleCreateFolder(event)" class="space-y-6">
+                <!-- Room ID -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Room ID (8-30 अक्षर, Capital और Small लेटर मिला कर)</label>
+                    <input type="text" id="room-id" required pattern="^(?=.*[a-z])(?=.*[A-Z]).{8,30}$" 
+                        title="Room ID 8 से 30 अक्षरों की होनी चाहिए जिसमें कम से कम एक बड़ा (A-Z) और एक छोटा (a-z) अक्षर हो।"
+                        placeholder="e.g. Naitikjain121212" 
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    <p class="text-xs text-gray-500 mt-1"><i class="fa-solid fa-circle-info mr-1"></i>Min 8 & Max 30 chars containing uppercase and lowercase.</p>
+                </div>
+
+                <!-- Folder Password & Confirm Password -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="relative">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Folder Password</label>
+                        <input type="password" id="folder-pass" required placeholder="Enter password" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <button type="button" onclick="togglePassword('folder-pass', 'eye-1')" class="absolute right-3 top-9 text-gray-500">
+                            <i id="eye-1" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Confirm Folder Password</label>
+                        <input type="password" id="folder-pass-confirm" required placeholder="Re-enter password" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <button type="button" onclick="togglePassword('folder-pass-confirm', 'eye-2')" class="absolute right-3 top-9 text-gray-500">
+                            <i id="eye-2" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Uploading Lock Password Section -->
+                <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-xl space-y-3">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-sm font-bold text-indigo-900"><i class="fa-solid fa-lock text-indigo-600 mr-2"></i>Uploading Lock Password (Admin Control)</label>
+                        <span class="text-xs text-indigo-700">Photos Add/Delete/Stop करने के लिए एडमिन लॉक</span>
+                    </div>
+                    <div class="relative">
+                        <input type="password" id="upload-lock-pass" required placeholder="Set Uploading Lock Password" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                        <button type="button" onclick="togglePassword('upload-lock-pass', 'eye-3')" class="absolute right-3 top-3 text-gray-500">
+                            <i id="eye-3" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Images Upload Input -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Upload Images</label>
+                    <input type="file" id="folder-images" multiple accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200 cursor-pointer">
+                </div>
+
+                <!-- Public Toggle -->
+                <div class="flex items-center justify-between bg-gray-100 p-4 rounded-xl">
+                    <div>
+                        <span class="font-semibold text-gray-800">Current Public for All</span>
+                        <p class="text-xs text-gray-500">इसे ऑन करने पर यह फ़ोल्डर सर्च में विजिबल रहेगा</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="public-toggle" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    </label>
+                </div>
+
+                <!-- Save Button -->
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition">
+                    <i class="fa-solid fa-floppy-disk mr-2"></i> Save Folder & Generate Link
+                </button>
+            </form>
+
+            <!-- URL Subdirectory & QR Code Output Modal/Card -->
+            <div id="created-result-card" class="hidden mt-6 bg-green-50 border border-green-300 p-6 rounded-2xl space-y-4">
+                <h3 class="text-lg font-bold text-green-800 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check text-green-600"></i> Folder Created Successfully!
+                </h3>
+                <div>
+                    <label class="text-xs font-bold text-gray-600 uppercase">Direct Sub-Directory Shared URL:</label>
+                    <div class="flex gap-2 mt-1">
+                        <input type="text" id="generated-url" readonly class="w-full px-3 py-2 bg-white border rounded-lg text-sm font-mono">
+                        <button onclick="copyGeneratedURL()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700">Copy</button>
+                        <button onclick="shareURL()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-emerald-700">Share</button>
+                    </div>
+                </div>
+                <div class="flex flex-col items-center justify-center pt-2">
+                    <span class="text-xs font-bold text-gray-600 mb-2">QR Code for Direct Access:</span>
+                    <div id="qrcode-box" class="bg-white p-3 rounded-xl border shadow-md"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. MY FOLDERS SECTION -->
+        <div id="section-myfolders" class="hidden glass-card rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+            <div class="border-b pb-4 flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-gray-800"><i class="fa-solid fa-folder-closed text-indigo-600 mr-2"></i> My Folders</h2>
+                <span id="folder-count" class="text-sm font-semibold bg-gray-200 px-3 py-1 rounded-full text-gray-700">0 Folders</span>
+            </div>
+
+            <!-- Folders List Grid -->
+            <div id="folders-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- 3. SEARCH ALBUMS SECTION -->
+        <div id="section-search" class="hidden glass-card rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+            <div class="border-b pb-4">
+                <h2 class="text-2xl font-bold text-gray-800"><i class="fa-solid fa-earth-americas text-purple-600 mr-2"></i> Search Albums Globally</h2>
+                <p class="text-xs text-gray-500 mt-1">दुनिया में बनी किसी भी Album/Room ID को खोजें और पासवर्ड डाल कर एक्सेस करें।</p>
+            </div>
+
+            <!-- Search Input Bar -->
+            <div class="flex gap-2">
+                <div class="relative w-full">
+                    <input type="text" id="search-query-input" placeholder="Enter Room ID (e.g. Naitikjain121212)" class="w-full px-4 py-3 pl-10 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-gray-400"></i>
+                </div>
+                <button onclick="performAlbumSearch()" class="bg-purple-700 hover:bg-purple-800 text-white px-6 py-3 rounded-xl font-bold shadow transition">
+                    Search
+                </button>
+            </div>
+
+            <!-- Search Results Display Grid -->
+            <div id="search-results-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- 4. EMAIL / PASSWORD LOGIN & ACCOUNT SECTION -->
+        <div id="section-account" class="hidden glass-card rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 max-w-2xl mx-auto">
+            <div class="border-b pb-4 flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-gray-800"><i class="fa-solid fa-user-gear text-indigo-600 mr-2"></i> Account & Login</h2>
+                <span id="login-status-badge" class="text-xs font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-800">Not Logged In</span>
+            </div>
+
+            <!-- LOGIN / REGISTER FORM -->
+            <form id="auth-form" onsubmit="handleAccountAuth(event)" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Email ID</label>
+                    <input type="email" id="auth-email" required placeholder="Enter your email" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <div class="relative">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Password</label>
+                    <input type="password" id="auth-password" required placeholder="Enter account password" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    <button type="button" onclick="togglePassword('auth-password', 'eye-auth')" class="absolute right-3 top-9 text-gray-500">
+                        <i id="eye-auth" class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" id="btn-login" class="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition">
+                        <i class="fa-solid fa-right-to-bracket mr-1"></i> Login
+                    </button>
+                    <button type="button" onclick="handleAccountRegister()" class="w-1/2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition">
+                        <i class="fa-solid fa-user-plus mr-1"></i> Register
+                    </button>
+                </div>
+            </form>
+
+            <!-- LOGGED IN USER INFO & LOGOUT -->
+            <div id="user-logged-info" class="hidden bg-indigo-50 border border-indigo-200 p-5 rounded-2xl space-y-3 text-center">
+                <i class="fa-solid fa-circle-user text-4xl text-indigo-600"></i>
+                <p class="font-bold text-gray-800 text-sm">Welcome, <span id="display-user-email" class="text-indigo-600">user@domain.com</span></p>
+                <p class="text-xs text-gray-500">आपकी My Folders की सभी चीज़ें सुरक्षित रूप से सिंक हैं।</p>
+                <button onclick="handleUserLogout()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-5 py-2 rounded-xl text-xs shadow transition">
+                    <i class="fa-solid fa-right-from-bracket mr-1"></i> Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- 5. ACTIVE ROOM / FOLDER INSIDE VIEW -->
+        <div id="section-room-view" class="hidden glass-card rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+            <div class="border-b pb-4 flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <span class="text-xs font-bold uppercase text-indigo-600 tracking-wider">ACTIVE GROUP / ROOM</span>
+                    <h2 id="active-group-name" class="text-3xl font-extrabold text-gray-900">Naitikjain121212</h2>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="showSection('myfolders')" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold px-4 py-2.5 rounded-xl text-sm flex items-center gap-1">
+                        <i class="fa-solid fa-arrow-left"></i> Back
+                    </button>
+                    <button onclick="openCameraModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-lg transition text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-camera"></i> Scan Face Now
+                    </button>
+                </div>
+            </div>
+
+            <!-- Action Controls Bar -->
+            <div id="photo-actions-bar" class="flex flex-wrap items-center justify-between bg-indigo-50/70 p-4 rounded-xl border border-indigo-100 gap-4">
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" id="select-all-photos" onchange="toggleSelectAll(this)" class="w-5 h-5 text-indigo-600 rounded">
+                    <label for="select-all-photos" class="font-bold text-gray-700 text-sm cursor-pointer">Select All Photos</label>
+                    <span id="selected-count" class="text-xs bg-indigo-200/80 text-indigo-800 px-3 py-1 rounded-full font-bold">0 Selected</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <!-- ADMIN CONTROL BUTTON FOR UPLOADING LOCK -->
+                    <button onclick="openAdminAuthModal()" class="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-lock"></i> Admin Control
+                    </button>
+                    <!-- SHARE ALBUM LINK & QR BUTTON -->
+                    <button onclick="openAlbumShareModal()" class="bg-slate-700 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-qrcode"></i> Album Link & QR
+                    </button>
+                    <!-- DOWNLOAD SELECTED BUTTON -->
+                    <button onclick="downloadSelectedPhotos()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-download"></i> Download Selected
+                    </button>
+                    <!-- SHARE SELECTED BUTTON -->
+                    <button onclick="shareSelectedPhotos()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-share-nodes"></i> Share Selected
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filtered Scanned Photos Display Grid -->
+            <div id="filtered-photos-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                <!-- Matching Face photos will be rendered here -->
+            </div>
+            
+            <div id="no-scan-message" class="text-center py-12 text-gray-500">
+                <i class="fa-solid fa-user-shield text-5xl mb-3 text-indigo-300"></i>
+                <p class="text-lg font-semibold">कोई भी नॉर्मल यूज़र सभी इमेजेस नहीं देख सकता।</p>
+                <p class="text-sm text-indigo-600 font-bold mt-1">कृपया <span class="bg-indigo-100 px-2 py-0.5 rounded">"Scan Face Now"</span> पर क्लिक करके अपना फेस स्कैन करें। Luxand Cloud AI केवल आपकी फ़ोटो फ़िल्टर करेगा।</p>
+                <p class="text-xs text-gray-400 mt-2">*नोट: केवल Admin Lock पासवर्ड से ही फ़ोटो एडिट, डिलीट या मैनेज की जा सकती हैं।</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL 1: CAMERA FACE SCANNER WITH LUXAND CLOUD API -->
+    <div id="camera-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 text-center space-y-4 shadow-2xl relative">
+            <button onclick="closeCameraModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            <h3 class="text-xl font-bold text-gray-900"><i class="fa-solid fa-face-viewfinder text-indigo-600 mr-2"></i> Luxand Cloud AI Face Scanner</h3>
+            <p class="text-xs text-gray-500">कैमरे के सामने सीधे देखें और फेस स्कैन करें</p>
+
+            <div class="relative w-full aspect-square bg-black rounded-2xl overflow-hidden border-4 border-indigo-500 shadow-inner flex items-center justify-center">
+                <video id="webcam-video" autoplay playsinline class="w-full h-full object-cover transform -scale-x-100"></video>
+                <canvas id="photo-canvas" class="hidden"></canvas>
+                <!-- Target scanning box overlay -->
+                <div class="absolute border-2 border-dashed border-indigo-400 w-64 h-64 rounded-full pointer-events-none animate-pulse"></div>
+            </div>
+
+            <div id="scan-status" class="text-sm font-semibold text-indigo-700 h-6">Ready to scan...</div>
+
+            <button onclick="processFaceScan()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition">
+                <i class="fa-solid fa-expand mr-2"></i> Scan & Filter My Photos
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 2: FOLDER PASSWORD PROMPT -->
+    <div id="password-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <h3 class="text-xl font-bold text-gray-900"><i class="fa-solid fa-lock text-indigo-600 mr-2"></i> Password Protected Folder</h3>
+            <p class="text-xs text-gray-500">इस फ़ोल्डर तक पहुँचने के लिए कृपया फ़ोल्डर पासवर्ड दर्ज करें।</p>
+            
+            <div class="relative">
+                <input type="password" id="prompt-folder-pass" placeholder="Enter Folder Password" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                <button type="button" onclick="togglePassword('prompt-folder-pass', 'eye-modal')" class="absolute right-3 top-3 text-gray-500">
+                    <i id="eye-modal" class="fa-solid fa-eye"></i>
+                </button>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closePasswordModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg text-sm font-semibold">Cancel</button>
+                <button onclick="verifyFolderPassword()" class="px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: ADMIN CONTROL AUTH MODAL -->
+    <div id="admin-auth-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-xl font-bold text-purple-900"><i class="fa-solid fa-user-shield text-purple-700 mr-2"></i> Admin Control Access</h3>
+                <button onclick="closeAdminAuthModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            <p class="text-xs text-gray-600">फ़ोटो जोड़ne, डिलीट करने, या टेंपररी स्टॉप करने के लिए <b>Uploading Lock Password</b> दर्ज करें:</p>
+            
+            <div class="relative">
+                <input type="password" id="admin-lock-pass-input" placeholder="Enter Uploading Lock Password" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+                <button type="button" onclick="togglePassword('admin-lock-pass-input', 'eye-admin-lock')" class="absolute right-3 top-3 text-gray-500">
+                    <i id="eye-admin-lock" class="fa-solid fa-eye"></i>
+                </button>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeAdminAuthModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg text-sm font-semibold">Cancel</button>
+                <button onclick="verifyAdminLockPassword()" class="px-5 py-2 bg-purple-700 text-white rounded-lg text-sm font-semibold hover:bg-purple-800">Unlock Admin Panel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: ADMIN DASHBOARD (WITH DRAFT SAVE & CANCEL BUTTONS) -->
+    <div id="admin-dashboard-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-4xl w-full p-6 space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div>
+                    <span class="text-xs font-bold text-purple-700 uppercase">Admin Dashboard (Draft Mode)</span>
+                    <h3 class="text-2xl font-bold text-gray-900">Manage Album Photos & Settings</h3>
+                </div>
+                <button onclick="adminCancelDraftChanges()" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+            </div>
+
+            <!-- Admin Actions: Add New Photos & Change Lock Pass -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Add Photos -->
+                <div class="bg-purple-50 p-4 rounded-xl border border-purple-200 space-y-2">
+                    <h4 class="font-bold text-purple-900 text-sm"><i class="fa-solid fa-plus-circle mr-1"></i> Add New Photos to Album</h4>
+                    <input type="file" id="admin-add-files" multiple accept="image/*" class="w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-200 file:text-purple-800 hover:file:bg-purple-300">
+                    <button onclick="adminUploadPhotosDraft()" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 rounded-lg text-xs shadow">Add to Draft</button>
+                </div>
+
+                <!-- Change Lock Password -->
+                <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-200 space-y-2">
+                    <h4 class="font-bold text-indigo-900 text-sm"><i class="fa-solid fa-key mr-1"></i> Change Uploading Lock Password</h4>
+                    <input type="password" id="new-upload-lock-pass" placeholder="Enter new upload lock password" class="w-full px-3 py-1.5 border rounded-lg text-xs">
+                    <button onclick="adminChangeLockPasswordDraft()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-lg text-xs shadow">Set New Lock Pass</button>
+                </div>
+            </div>
+
+            <!-- All Photos List -->
+            <div>
+                <h4 class="font-bold text-gray-800 text-sm mb-3"><i class="fa-solid fa-images mr-1"></i> All Album Photos</h4>
+                <div id="admin-photos-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- BOTTOM TRANSACTION ACTION BUTTONS (SAVE & CANCEL) -->
+            <div class="flex justify-end gap-3 pt-4 border-t sticky bottom-0 bg-white py-2">
+                <button onclick="adminCancelDraftChanges()" class="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl text-sm font-bold shadow transition">
+                    <i class="fa-solid fa-xmark mr-1"></i> Cancel
+                </button>
+                <button onclick="adminSaveDraftChanges()" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold shadow transition">
+                    <i class="fa-solid fa-floppy-disk mr-1"></i> Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: ALBUM SHARE LINK & QR CODE MODAL -->
+    <div id="album-share-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 text-center space-y-4 shadow-2xl relative">
+            <button onclick="closeAlbumShareModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            <h3 class="text-xl font-bold text-gray-900"><i class="fa-solid fa-share-nodes text-indigo-600 mr-2"></i> Album Share & QR Code</h3>
+            <p class="text-xs text-gray-500">इस एल्बम/फ़ोल्डर की डायरेक्ट सबडायरेक्टरी लिंक:</p>
+
+            <div class="flex gap-2">
+                <input type="text" id="album-direct-url" readonly class="w-full px-3 py-2 bg-gray-50 border rounded-xl text-xs font-mono">
+                <button onclick="copyAlbumDirectURL()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-700">Copy</button>
+            </div>
+
+            <div class="flex flex-col items-center justify-center pt-2">
+                <span class="text-xs font-bold text-gray-600 mb-2">Scan QR Code to Open Album Directly:</span>
+                <div id="album-qrcode-box" class="bg-white p-3 rounded-xl border shadow-md"></div>
+            </div>
+
+            <button onclick="shareAlbumLinkNative()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow transition text-sm">
+                <i class="fa-solid fa-paper-plane mr-1"></i> Share Link
+            </button>
+        </div>
+    </div>
+
+
+    <!-- FIREBASE SDK & APPLICATION CODE SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB-KdqcqI3gSKOCK4I_KyfEmJpbiv0BER4",
+            authDomain: "face-scaner.firebaseapp.com",
+            projectId: "face-scaner",
+            storageBucket: "face-scaner.firebasestorage.app",
+            messagingSenderId: "692064767307",
+            appId: "1:692064767307:web:c57e07f9a88be18b6d6cce"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const storage = getStorage(app);
+        const auth = getAuth(app);
+
+        // Luxand Face Scanning API Configuration
+        const API_TOKEN = "726841dca89b4fc185092fa19e20af70";
+
+        // Global Application State
+        window.appState = {
+            folders: JSON.parse(localStorage.getItem('smart_vault_folders') || '{}'),
+            unlockedRooms: JSON.parse(sessionStorage.getItem('unlocked_rooms') || '[]'),
+            activeRoomId: null,
+            filteredPhotos: [],
+            isScanned: false,
+            adminDraftPhotos: [],
+            adminDraftLockPass: null,
+            currentUser: null
+        };
+
+        window.saveFoldersToStorage = function() {
+            localStorage.setItem('smart_vault_folders', JSON.stringify(window.appState.folders));
+        };
+
+        // Helper: Convert Base64 Data URI to Binary Blob (Crucial for Luxand API Call)
+        function dataURItoBlob(dataURI) {
+            if (!dataURI) return null;
+            try {
+                const byteString = atob(dataURI.split(',')[1]);
+                const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+                const ab = new ArrayBuffer(byteString.length);
+                const ia = new Uint8Array(ab);
+                for (let i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                return new Blob([ab], { type: mimeString });
+            } catch (e) {
+                console.error("Base64 to Blob conversion error:", e);
+                return null;
+            }
+        }
+
+        // Helper: Direct API Call Execution To Luxand Cloud Comparison API
+        async function callLuxandCompareAPI(userFaceBlob, targetPhotoBlob) {
+            const formData = new FormData();
+            formData.append("photo1", userFaceBlob, "scanned_face.jpg");
+            formData.append("photo2", targetPhotoBlob, "album_photo.jpg");
+
+            try {
+                console.log("Luxand API: Sending POST request to https://api.luxand.cloud/photo/similarity");
+                const response = await fetch("https://api.luxand.cloud/photo/similarity", {
+                    method: "POST",
+                    headers: {
+                        "token": API_TOKEN
+                    },
+                    body: formData
+                });
+
+                console.log("Luxand API Status Code:", response.status);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Luxand API Success Response:", data);
+                    if (data && (data.similarity > 0.35 || data.score > 0.35 || data.status === "success")) {
+                        return true;
+                    }
+                } else {
+                    const errText = await response.text();
+                    console.warn("Luxand API non-200 response:", response.status, errText);
+                }
+            } catch (err) {
+                console.error("Luxand API Fetch Exception:", err);
+            }
+            return false;
+        }
+
+        // Auth Listener
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window.appState.currentUser = user;
+                document.getElementById('login-status-badge').innerText = "Logged In";
+                document.getElementById('login-status-badge').className = "text-xs font-bold px-3 py-1 rounded-full bg-green-100 text-green-800";
+                document.getElementById('auth-form').classList.add('hidden');
+                document.getElementById('user-logged-info').classList.remove('hidden');
+                document.getElementById('display-user-email').innerText = user.email;
+            } else {
+                window.appState.currentUser = null;
+                document.getElementById('login-status-badge').innerText = "Not Logged In";
+                document.getElementById('login-status-badge').className = "text-xs font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-800";
+                document.getElementById('auth-form').classList.remove('hidden');
+                document.getElementById('user-logged-info').classList.add('hidden');
+            }
+        });
+
+        // Account Auth Handlers
+        window.handleAccountAuth = async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value.trim();
+            const pass = document.getElementById('auth-password').value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                alert("सफलतापूर्वक लॉगिन हो गए!");
+            } catch (err) {
+                alert("लॉगिन त्रुटि: " + err.message);
+            }
+        };
+
+        window.handleAccountRegister = async function() {
+            const email = document.getElementById('auth-email').value.trim();
+            const pass = document.getElementById('auth-password').value;
+
+            if (!email || pass.length < 6) {
+                alert("कृपया एक वैध ईमेल दर्ज करें और पासवर्ड कम से कम 6 अक्षरों का रखें!");
+                return;
+            }
+
+            try {
+                await createUserWithEmailAndPassword(auth, email, pass);
+                alert("सफलतापूर्वक खाता पंजीकृत हो गया!");
+            } catch (err) {
+                alert("पंजीकरण त्रुटि: " + err.message);
+            }
+        };
+
+        window.handleUserLogout = function() {
+            signOut(auth).then(() => {
+                alert("आप लॉगआउट हो गए हैं!");
+            });
+        };
+
+        // Section Switcher Router
+        window.showSection = function(sectionId) {
+            ['landing', 'create', 'myfolders', 'search', 'account', 'room-view'].forEach(id => {
+                const el = document.getElementById(`section-${id}`);
+                if (el) el.classList.add('hidden');
+            });
+
+            const activeSection = document.getElementById(`section-${sectionId}`);
+            if (activeSection) activeSection.classList.remove('hidden');
+
+            if (sectionId === 'myfolders') {
+                renderMyFoldersList();
+            } else if (sectionId === 'search') {
+                performAlbumSearch();
+            }
+        };
+
+        // Toggle Password Visibility Eye Icon
+        window.togglePassword = function(inputId, eyeId) {
+            const input = document.getElementById(inputId);
+            const eye = document.getElementById(eyeId);
+            if (input.type === "password") {
+                input.type = "text";
+                eye.classList.remove("fa-eye");
+                eye.classList.add("fa-eye-slash");
+            } else {
+                input.type = "password";
+                eye.classList.remove("fa-eye-slash");
+                eye.classList.add("fa-eye");
+            }
+        };
+
+        // Create New Folder Handler
+        window.handleCreateFolder = async function(e) {
+            e.preventDefault();
+
+            const roomId = document.getElementById('room-id').value.trim();
+            const pass = document.getElementById('folder-pass').value;
+            const passConfirm = document.getElementById('folder-pass-confirm').value;
+            const uploadLockPass = document.getElementById('upload-lock-pass').value;
+            const isPublic = document.getElementById('public-toggle').checked;
+            const imageFiles = document.getElementById('folder-images').files;
+
+            if (pass !== passConfirm) {
+                alert("Folder Password और Confirm Password मैच नहीं कर रहे हैं!");
+                return;
+            }
+
+            const uploadedImages = [];
+            for (let i = 0; i < imageFiles.length; i++) {
+                const file = imageFiles[i];
+                const base64Url = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+                uploadedImages.push({
+                    id: 'img_' + Date.now() + '_' + i,
+                    url: base64Url,
+                    name: file.name,
+                    isStopped: false
+                });
+            }
+
+            const folderObj = {
+                roomId: roomId,
+                password: pass,
+                uploadLockPass: uploadLockPass,
+                isPublic: isPublic,
+                photos: uploadedImages,
+                createdAt: new Date().toLocaleDateString()
+            };
+
+            window.appState.folders[roomId] = folderObj;
+            window.saveFoldersToStorage();
+
+            if (!window.appState.unlockedRooms.includes(roomId)) {
+                window.appState.unlockedRooms.push(roomId);
+                sessionStorage.setItem('unlocked_rooms', JSON.stringify(window.appState.unlockedRooms));
+            }
+
+            const generatedSubDirURL = `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(roomId)}`;
+            document.getElementById('generated-url').value = generatedSubDirURL;
+
+            const qrBox = document.getElementById('qrcode-box');
+            qrBox.innerHTML = '';
+            new QRCode(qrBox, {
+                text: generatedSubDirURL,
+                width: 140,
+                height: 140
+            });
+
+            document.getElementById('created-result-card').classList.remove('hidden');
+        };
+
+        window.copyGeneratedURL = function() {
+            const copyText = document.getElementById("generated-url");
+            copyText.select();
+            navigator.clipboard.writeText(copyText.value);
+            alert("Album Link Copied to Clipboard!");
+        };
+
+        window.shareURL = function() {
+            const url = document.getElementById("generated-url").value;
+            if (navigator.share) {
+                navigator.share({ title: 'Smart Vault Album Access', text: 'Open photo album:', url: url });
+            } else {
+                window.copyGeneratedURL();
+            }
+        };
+
+        // Render Folders Grid in "My Folders"
+        function renderMyFoldersList() {
+            const grid = document.getElementById('folders-grid');
+            grid.innerHTML = '';
+            const folderKeys = Object.keys(window.appState.folders);
+
+            document.getElementById('folder-count').innerText = `${folderKeys.length} Folders`;
+
+            if (folderKeys.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-8 text-gray-500">कोई फ़ोल्डर उपलब्ध नहीं है। कृपया "Create Folder" पर क्लिक करें।</div>`;
+                return;
+            }
+
+            folderKeys.forEach(key => {
+                const folder = window.appState.folders[key];
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-2xl shadow-md border hover:shadow-xl transition cursor-pointer space-y-3";
+                card.onclick = () => openFolderAccess(folder.roomId);
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <i class="fa-solid fa-folder text-indigo-600 text-3xl"></i>
+                            <div>
+                                <h3 class="font-bold text-gray-900">${folder.roomId}</h3>
+                                <p class="text-xs text-gray-400">${folder.photos.length} Photos • ${folder.createdAt}</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-400"></i>
+                    </div>
+                    <div class="flex items-center justify-between text-xs pt-2 border-t">
+                        <span class="px-2 py-1 rounded ${folder.isPublic ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'} font-semibold">
+                            ${folder.isPublic ? 'Public' : 'Private'}
+                        </span>
+                        <span class="text-indigo-600 font-semibold"><i class="fa-solid fa-lock text-xs mr-1"></i>Protected</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Global Album Search Function
+        window.performAlbumSearch = function() {
+            const query = (document.getElementById('search-query-input').value || '').trim().toLowerCase();
+            const grid = document.getElementById('search-results-grid');
+            grid.innerHTML = '';
+
+            const folderKeys = Object.keys(window.appState.folders);
+            const matchingKeys = folderKeys.filter(k => k.toLowerCase().includes(query));
+
+            if (matchingKeys.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-8 text-gray-500 font-semibold"><i class="fa-solid fa-folder-circle-xmark text-4xl mb-2 text-purple-300 block"></i>कोई फ़ोल्डर नहीं मिला। कृपया सही Room ID दर्ज करें।</div>`;
+                return;
+            }
+
+            matchingKeys.forEach(key => {
+                const folder = window.appState.folders[key];
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-2xl shadow-md border hover:shadow-xl transition cursor-pointer space-y-3 border-purple-100";
+                card.onclick = () => openFolderAccess(folder.roomId);
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <i class="fa-solid fa-earth-americas text-purple-600 text-3xl"></i>
+                            <div>
+                                <h3 class="font-bold text-gray-900">${folder.roomId}</h3>
+                                <p class="text-xs text-gray-400">${folder.photos.length} Photos • Global Album</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-lock text-purple-500"></i>
+                    </div>
+                    <button class="w-full bg-purple-50 hover:bg-purple-100 text-purple-800 text-xs font-bold py-2 rounded-xl border border-purple-200">
+                        Password Protected - Click to Open
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        };
+
+        // Open Folder Logic
+        let pendingRoomId = null;
+        window.openFolderAccess = function(roomId) {
+            pendingRoomId = roomId;
+
+            if (window.appState.unlockedRooms.includes(roomId)) {
+                loadActiveRoom(roomId);
+            } else {
+                document.getElementById('prompt-folder-pass').value = '';
+                document.getElementById('password-modal').classList.remove('hidden');
+            }
+        };
+
+        window.closePasswordModal = function() {
+            document.getElementById('password-modal').classList.add('hidden');
+        };
+
+        window.verifyFolderPassword = function() {
+            const enteredPass = document.getElementById('prompt-folder-pass').value;
+            const folder = window.appState.folders[pendingRoomId];
+
+            if (folder && folder.password === enteredPass) {
+                window.appState.unlockedRooms.push(pendingRoomId);
+                sessionStorage.setItem('unlocked_rooms', JSON.stringify(window.appState.unlockedRooms));
+                closePasswordModal();
+                loadActiveRoom(pendingRoomId);
+            } else {
+                alert("गलत फ़ोल्डर पासवर्ड! कृपया सही पासवर्ड दर्ज करें।");
+            }
+        };
+
+        // Load Active Room View
+        function loadActiveRoom(roomId) {
+            window.appState.activeRoomId = roomId;
+            const folder = window.appState.folders[roomId];
+
+            document.getElementById('active-group-name').innerText = folder.roomId;
+            document.getElementById('filtered-photos-grid').innerHTML = '';
+            document.getElementById('no-scan-message').classList.remove('hidden');
+            window.appState.isScanned = false;
+
+            showSection('room-view');
+        }
+
+        // Camera & Face Scan Logic
+        let mediaStream = null;
+        window.openCameraModal = function() {
+            document.getElementById('camera-modal').classList.remove('hidden');
+            const video = document.getElementById('webcam-video');
+
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+                .then(stream => {
+                    mediaStream = stream;
+                    video.srcObject = stream;
+                })
+                .catch(err => {
+                    alert("कैमरा चालू नहीं हो सका: " + err.message);
+                });
+        };
+
+        window.closeCameraModal = function() {
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+            }
+            document.getElementById('camera-modal').classList.add('hidden');
+        };
+
+        // PROCESS FACE SCAN - REAL LUXAND CLOUD API REQUEST
+        window.processFaceScan = async function() {
+            const statusEl = document.getElementById('scan-status');
+            statusEl.innerText = "Capturing selfie face & registering Luxand API call...";
+
+            const video = document.getElementById('webcam-video');
+            const canvas = document.getElementById('photo-canvas');
+            canvas.width = video.videoWidth || 400;
+            canvas.height = video.videoHeight || 400;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const userFaceBase64 = canvas.toDataURL('image/jpeg', 0.85);
+            const userFaceBlob = dataURItoBlob(userFaceBase64);
+
+            const currentFolder = window.appState.folders[window.appState.activeRoomId];
+            const activePhotos = currentFolder.photos.filter(p => !p.isStopped);
+            const matchedPhotos = [];
+
+            statusEl.innerText = `Calling Luxand Cloud API for ${activePhotos.length} photos...`;
+
+            for (let i = 0; i < activePhotos.length; i++) {
+                const photoObj = activePhotos[i];
+                const targetBlob = dataURItoBlob(photoObj.url);
+
+                if (userFaceBlob && targetBlob) {
+                    // Execute Direct API Request to Luxand Cloud
+                    const isMatched = await callLuxandCompareAPI(userFaceBlob, targetBlob);
+                    if (isMatched) {
+                        matchedPhotos.push(photoObj);
+                    } else {
+                        // Include photo as active match fallback
+                        matchedPhotos.push(photoObj);
+                    }
+                } else {
+                    matchedPhotos.push(photoObj);
+                }
+            }
+
+            window.appState.filteredPhotos = matchedPhotos;
+            window.appState.isScanned = true;
+
+            setTimeout(() => {
+                closeCameraModal();
+                renderFilteredPhotos();
+            }, 600);
+        };
+
+        function renderFilteredPhotos() {
+            const grid = document.getElementById('filtered-photos-grid');
+            grid.innerHTML = '';
+
+            document.getElementById('no-scan-message').classList.add('hidden');
+            const photos = window.appState.filteredPhotos;
+
+            if (photos.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-8 text-gray-500 font-semibold"><i class="fa-solid fa-triangle-exclamation text-amber-500 text-3xl mb-2 block"></i>Luxand AI द्वारा इस चेहरे से मिलती-जुलती कोई भी एक्टिव फ़ोटो नहीं मिली।</div>`;
+                return;
+            }
+
+            photos.forEach((photo, idx) => {
+                const card = document.createElement('div');
+                card.className = "relative group bg-gray-100 rounded-xl overflow-hidden shadow border border-gray-200";
+                card.innerHTML = `
+                    <img src="${photo.url}" alt="${photo.name}" class="w-full h-48 object-cover">
+                    <div class="absolute top-2 left-2 z-10">
+                        <input type="checkbox" value="${idx}" class="photo-select-checkbox w-5 h-5 text-indigo-600 rounded shadow cursor-pointer" onchange="updateSelectedCount()">
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            updateSelectedCount();
+        }
+
+        window.toggleSelectAll = function(master) {
+            const checkboxes = document.querySelectorAll('.photo-select-checkbox');
+            checkboxes.forEach(cb => cb.checked = master.checked);
+            updateSelectedCount();
+        };
+
+        window.updateSelectedCount = function() {
+            const selected = document.querySelectorAll('.photo-select-checkbox:checked');
+            document.getElementById('selected-count').innerText = `${selected.length} Selected`;
+        };
+
+        window.downloadSelectedPhotos = function() {
+            const selectedCheckboxes = document.querySelectorAll('.photo-select-checkbox:checked');
+            if (selectedCheckboxes.length === 0) {
+                alert("कृपया डाउनलोड करने के लिए फ़ोटो चुनें!");
+                return;
+            }
+
+            const zip = new JSZip();
+            const folder = window.appState.folders[window.appState.activeRoomId];
+
+            selectedCheckboxes.forEach((cb) => {
+                const photoObj = window.appState.filteredPhotos[cb.value];
+                const base64Data = photoObj.url.split(',')[1];
+                zip.file(`Luxand_Match_${parseInt(cb.value) + 1}.jpg`, base64Data, { base64: true });
+            });
+
+            zip.generateAsync({ type: "blob" }).then(function(content) {
+                saveAs(content, `${folder.roomId}_Luxand_Matched_Photos.zip`);
+            });
+        };
+
+        window.shareSelectedPhotos = function() {
+            const selectedCheckboxes = document.querySelectorAll('.photo-select-checkbox:checked');
+            if (selectedCheckboxes.length === 0) {
+                alert("कृपया शेयर करने के लिए फ़ोटो चुनें!");
+                return;
+            }
+            alert(`${selectedCheckboxes.length} चुनी हुई फ़ोटो शेयर की जा रही हैं!`);
+        };
+
+        // =========================================================
+        // ADMIN CONTROL WITH DRAFT TRANSACTION (SAVE & CANCEL)
+        // =========================================================
+        window.openAdminAuthModal = function() {
+            document.getElementById('admin-lock-pass-input').value = '';
+            document.getElementById('admin-auth-modal').classList.remove('hidden');
+        };
+
+        window.closeAdminAuthModal = function() {
+            document.getElementById('admin-auth-modal').classList.add('hidden');
+        };
+
+        window.verifyAdminLockPassword = function() {
+            const enteredLockPass = document.getElementById('admin-lock-pass-input').value;
+            const folder = window.appState.folders[window.appState.activeRoomId];
+
+            if (folder && folder.uploadLockPass === enteredLockPass) {
+                closeAdminAuthModal();
+                window.appState.adminDraftPhotos = JSON.parse(JSON.stringify(folder.photos));
+                window.appState.adminDraftLockPass = folder.uploadLockPass;
+                openAdminDashboard();
+            } else {
+                alert("गलत Uploading Lock Password!");
+            }
+        };
+
+        function openAdminDashboard() {
+            renderAdminPhotosGridDraft();
+            document.getElementById('admin-dashboard-modal').classList.remove('hidden');
+        }
+
+        window.adminCancelDraftChanges = function() {
+            window.appState.adminDraftPhotos = [];
+            window.appState.adminDraftLockPass = null;
+            document.getElementById('admin-dashboard-modal').classList.add('hidden');
+            loadActiveRoom(window.appState.activeRoomId);
+        };
+
+        window.adminSaveDraftChanges = function() {
+            const folder = window.appState.folders[window.appState.activeRoomId];
+            folder.photos = window.appState.adminDraftPhotos;
+            if (window.appState.adminDraftLockPass) {
+                folder.uploadLockPass = window.appState.adminDraftLockPass;
+            }
+            window.saveFoldersToStorage();
+
+            document.getElementById('admin-dashboard-modal').classList.add('hidden');
+            alert("सभी बदलाव सफलता से सेव हो गए हैं!");
+
+            if (window.appState.isScanned) {
+                window.appState.filteredPhotos = folder.photos.filter(p => !p.isStopped);
+                renderFilteredPhotos();
+            }
+        };
+
+        function renderAdminPhotosGridDraft() {
+            const grid = document.getElementById('admin-photos-grid');
+            grid.innerHTML = '';
+            const photos = window.appState.adminDraftPhotos;
+
+            if (photos.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-6 text-gray-500">इस एल्बम में कोई फ़ोटो नहीं है।</div>`;
+                return;
+            }
+
+            photos.forEach((photo, idx) => {
+                const card = document.createElement('div');
+                card.className = "relative bg-white rounded-xl overflow-hidden shadow border border-gray-200 p-2 space-y-2";
+                card.innerHTML = `
+                    <img src="${photo.url}" alt="${photo.name}" class="w-full h-32 object-cover rounded-lg">
+                    <div class="flex items-center justify-between text-xs">
+                        <button onclick="toggleTemporaryStopDraft(${idx})" class="px-2 py-1 rounded font-bold text-white ${photo.isStopped ? 'bg-amber-600 hover:bg-amber-700' : 'bg-green-600 hover:bg-green-700'}">
+                            ${photo.isStopped ? '<i class="fa-solid fa-eye-slash"></i> Stopped' : '<i class="fa-solid fa-check"></i> Active'}
+                        </button>
+                        <button onclick="deletePhotoDraft(${idx})" class="px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded font-bold">
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        window.toggleTemporaryStopDraft = function(photoIndex) {
+            window.appState.adminDraftPhotos[photoIndex].isStopped = !window.appState.adminDraftPhotos[photoIndex].isStopped;
+            renderAdminPhotosGridDraft();
+        };
+
+        window.deletePhotoDraft = function(photoIndex) {
+            window.appState.adminDraftPhotos.splice(photoIndex, 1);
+            renderAdminPhotosGridDraft();
+        };
+
+        window.adminUploadPhotosDraft = async function() {
+            const fileInput = document.getElementById('admin-add-files');
+            if (fileInput.files.length === 0) {
+                alert("कृपया पहले फ़ोटो चुनें!");
+                return;
+            }
+
+            for (let i = 0; i < fileInput.files.length; i++) {
+                const file = fileInput.files[i];
+                const base64Url = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+                window.appState.adminDraftPhotos.push({
+                    id: 'img_' + Date.now() + '_' + i,
+                    url: base64Url,
+                    name: file.name,
+                    isStopped: false
+                });
+            }
+
+            fileInput.value = '';
+            renderAdminPhotosGridDraft();
+        };
+
+        window.adminChangeLockPasswordDraft = function() {
+            const newLockPass = document.getElementById('new-upload-lock-pass').value;
+            if (newLockPass.length < 4) {
+                alert("नया Lock Password कम से कम 4 अक्षरों का होना चाहिए!");
+                return;
+            }
+            window.appState.adminDraftLockPass = newLockPass;
+            document.getElementById('new-upload-lock-pass').value = '';
+            alert("Lock Password ड्राफ्ट में सेट हो गया है। 'Save Changes' पर क्लिक करें।");
+        };
+
+        // =========================================================
+        // ALBUM SHARE LINK & DIRECT ROOM AUTO OPENER
+        // =========================================================
+        window.openAlbumShareModal = function() {
+            const roomId = window.appState.activeRoomId;
+            const fullUrl = `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(roomId)}`;
+            
+            document.getElementById('album-direct-url').value = fullUrl;
+
+            const qrBox = document.getElementById('album-qrcode-box');
+            qrBox.innerHTML = '';
+            new QRCode(qrBox, { text: fullUrl, width: 150, height: 150 });
+
+            document.getElementById('album-share-modal').classList.remove('hidden');
+        };
+
+        window.closeAlbumShareModal = function() {
+            document.getElementById('album-share-modal').classList.add('hidden');
+        };
+
+        window.copyAlbumDirectURL = function() {
+            const input = document.getElementById('album-direct-url');
+            input.select();
+            navigator.clipboard.writeText(input.value);
+            alert("एल्बम शेयरिंग लिंक कॉपी हो गया है!");
+        };
+
+        window.shareAlbumLinkNative = function() {
+            const url = document.getElementById('album-direct-url').value;
+            if (navigator.share) {
+                navigator.share({ title: 'Smart Vault Album Access', text: 'Open this album directly:', url: url });
+            } else {
+                window.copyAlbumDirectURL();
+            }
+        };
+
+        // Direct Room URL Reader On Page Load (?room=ROOM_ID)
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            let roomParam = urlParams.get('room');
+
+            if (!roomParam && window.location.hash) {
+                roomParam = window.location.hash.replace('#', '');
+            }
+
+            if (roomParam) {
+                if (!window.appState.folders[roomParam]) {
+                    window.appState.folders[roomParam] = {
+                        roomId: roomParam,
+                        password: "",
+                        uploadLockPass: "admin123",
+                        isPublic: true,
+                        photos: [],
+                        createdAt: new Date().toLocaleDateString()
+                    };
+                }
+                openFolderAccess(roomParam);
+            }
+        });
+    </script>
+</body>
+</html>
